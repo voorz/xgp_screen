@@ -27,6 +27,20 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+# Remove legacy packages from the original author (conflict with the new Go version).
+# Legacy init script name is zz_xgp_screen, package name is xgp-v3-screen.
+if [ -x /etc/init.d/zz_xgp_screen ]; then
+  log "Stopping legacy daemon..."
+  /etc/init.d/zz_xgp_screen stop 2>/dev/null || true
+  /etc/init.d/zz_xgp_screen disable 2>/dev/null || true
+fi
+for pkg in xgp-v3-screen luci-app-xgp-v3-screen-brightness; do
+  if opkg list-installed 2>/dev/null | grep -q "^$pkg "; then
+    log "Removing legacy package: $pkg..."
+    opkg remove "$pkg" || true
+  fi
+done
+
 # Download tool.
 if command -v curl >/dev/null 2>&1; then
   DL="curl -fsSL -o"
