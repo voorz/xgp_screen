@@ -1,0 +1,1 @@
+{"luci-app-xgp-screen":{"description":"Allow XGP Screen to run the framebuffer renderer","read":{"ubus":{"file":["exec"]}},"write":{"ubus":{"file":["exec"]}}}}
