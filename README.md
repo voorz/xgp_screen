@@ -10,7 +10,9 @@ Real-time system dashboard for the XGP v3 GC9307 TFT display.
 
 </div>
 
-![dashboard](dash.png)
+<div align="center">
+  <img src="dash.png" alt="dashboard" width="480" />
+</div>
 
 ## Architecture
 
