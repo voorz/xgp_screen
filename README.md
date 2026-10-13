@@ -1,35 +1,41 @@
+<div align="center">
+
 # xgp_screen
 
-Real-time system dashboard for the XGP v3 GC9307 TFT display (320×240),
-packaged as LuCI app + Go daemon `.ipk` files.
+![Release](https://img.shields.io/badge/release-v0.1.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-OpenWrt-lightgrey)
+
+Real-time system dashboard for the XGP v3 GC9307 TFT display.
+
+</div>
 
 ![dashboard](dash.png)
+
+## Architecture
+
+```
+LuCI Web UI (JS view)
+        |
+        v (UCI)
+Go Daemon (procd)
+  collector -> screen -> /dev/fb0 320x240
+```
 
 ## Features
 
 - RAM/CPU usage bars
-- Up/down throughput chart (live)
-- Internet connectivity icons (Baidu/Google)
+- Live up/down throughput chart
+- Connectivity icons (Baidu/Google)
 - Router LAN IP display
-- 1 Hz refresh, procd-managed daemon
+- 1 Hz refresh, auto-start on boot
 
 ## Install
-
-One-line install:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/voorz/xgp_screen/main/install.sh | sh
 ```
 
-Or manually:
-
-```sh
-cd /tmp
-wget -O core.ipk https://github.com/voorz/xgp_screen/releases/download/v0.1.0/xgp-screen-core_0.1.0-13_aarch64_generic.ipk
-wget -O luci.ipk https://github.com/voorz/xgp_screen/releases/download/v0.1.0/luci-app-xgp-screen_0.1.0-13_all.ipk
-opkg install core.ipk luci.ipk
-```
-
 ## License
 
-See [LICENSE](LICENSE).
+See LICENSE file.
