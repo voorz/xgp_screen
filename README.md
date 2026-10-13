@@ -21,7 +21,25 @@ luci-app 后台编排。驱动和内容之间没有私有协议，只有标准 f
 渲染代码与硬件解耦（`screen.Pixmap`），可用 `tools/preview` 在无硬件
 环境验证：`go run ./tools/preview` 生成 `hello.png`。
 
-## 设备端测试（不需要重新编译固件）
+## 快速迭代（推荐，不用编译固件）
+
+完整镜像构建要 ~2 小时；这两个包是纯静态 Go 二进制 + Lua/配置文件，
+`tools/mkipk.sh` 直接组装 ipk，几秒搞定：
+
+```sh
+./tools/mkipk.sh            # -> dist/*.ipk（版本号可传参：./tools/mkipk.sh 0.1.1 1）
+scp dist/*.ipk root@<设备IP>:/tmp/
+ssh root@<设备IP> 'opkg install /tmp/xgp-screen-core_*.ipk /tmp/luci-app-xgp-screen_*.ipk'
+```
+
+装完直接跑 `/usr/bin/xgp-screen` 看屏；luci-app 在 `服务 → XGP Screen`，
+带一键屏幕测试入口。改代码 → 重新打版（release 号 +1 避免 opkg 缓存）→
+安装，整个循环一分钟。
+
+`openwrt/` 下的两个 Makefile 是给以后走 buildroot/feed 集成准备的，
+日常迭代不需要它们。
+
+## 设备端测试
 
 ### Level 0：驱动是否正常（30 秒）
 
