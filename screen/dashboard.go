@@ -81,7 +81,7 @@ func DrawDashboard(p *Pixmap, d *DashboardData) {
 	p.DrawText(170, barY, "CPU", 2, colDim)
 	cpuPct := sprintfPct(d.CPUFrac)
 	if d.CPUTemp > 0 {
-		cpuPct += fmt.Sprintf("/%.0fC", d.CPUTemp)
+		cpuPct += fmt.Sprintf("/%.0f℃", d.CPUTemp)
 	}
 	p.DrawText(170+130-TextWidth(cpuPct, 2), barY, cpuPct, 2, colFg)
 	p.DrawBar(170, barY+14+labelBarGap, 130, barH, d.CPUFrac, colUp, colBarBg, colDim, false)
