@@ -5,8 +5,6 @@ package screen
 // DrawBar paints a horizontal progress bar at (x, y, w, h).
 // frac is 0.0..1.0 (clamped). The track is drawn in trackC, the filled
 // portion in fillC. If border is true, a 1px border in borderC is drawn.
-// Both track and fill use rounded corners (pill shape, radius = h/2).
-// The fill's right end is rounded only when full; otherwise flat.
 func (p *Pixmap) DrawBar(x, y, w, h int, frac float64, fillC, trackC, borderC uint16, border bool) {
 	if frac < 0 {
 		frac = 0
@@ -27,56 +25,12 @@ func (p *Pixmap) DrawBar(x, y, w, h int, frac float64, fillC, trackC, borderC ui
 	if iw <= 0 || ih <= 0 {
 		return
 	}
-	// Track: full pill.
-	p.FillRoundedRect(ix, iy, iw, ih, ih/2, trackC)
-	// Fill: pill shape (rounded on both ends), even when partial.
+	p.FillRect(ix, iy, iw, ih, trackC)
+	// Fill.
 	fw := int(float64(iw) * frac)
-	if fw <= 0 {
-		return
+	if fw > 0 {
+		p.FillRect(ix, iy, fw, ih, fillC)
 	}
-	r := ih / 2
-	if fw >= iw {
-		p.FillRoundedRect(ix, iy, iw, ih, r, fillC)
-		return
-	}
-	if fw <= ih {
-		// Very short: circle with diameter = fill width.
-		p.DrawCircle(ix+fw/2, iy+ih/2, fw/2, fillC)
-		return
-	}
-	// Partial pill: rounded on both ends.
-	p.FillRoundedRect(ix, iy, fw, ih, r, fillC)
-}
-
-// FillRoundedRect paints a filled rounded rectangle.
-// Radius is clamped to half of the smaller dimension.
-func (p *Pixmap) FillRoundedRect(x, y, w, h, r int, c uint16) {
-	if w <= 0 || h <= 0 {
-		return
-	}
-	if r <= 0 {
-		p.FillRect(x, y, w, h, c)
-		return
-	}
-	maxR := h / 2
-	if w/2 < maxR {
-		maxR = w / 2
-	}
-	if r > maxR {
-		r = maxR
-	}
-	// Center rect (full width minus corner circles, full height).
-	p.FillRect(x+r, y, w-2*r, h, c)
-	// Left and right side rects (between top and bottom corners).
-	if h > 2*r {
-		p.FillRect(x, y+r, r, h-2*r, c)
-		p.FillRect(x+w-r, y+r, r, h-2*r, c)
-	}
-	// Four corner circles.
-	p.DrawCircle(x+r, y+r, r, c)
-	p.DrawCircle(x+w-r-1, y+r, r, c)
-	p.DrawCircle(x+r, y+h-r-1, r, c)
-	p.DrawCircle(x+w-r-1, y+h-r-1, r, c)
 }
 
 // DrawSparkline paints a line chart of vals inside (x, y, w, h).
