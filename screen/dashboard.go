@@ -1,5 +1,7 @@
 package screen
 
+import "fmt"
+
 // DashboardData is everything the single-page dashboard shows.
 // Rates are bytes/sec; UpHist/DownHist are oldest-to-newest samples
 // for the sparklines. BaiduOk/GoogleOk drive the connectivity icons.
@@ -15,6 +17,9 @@ type DashboardData struct {
 	BaiduOk  bool
 	GoogleOk bool
 	NikkiOk  bool // true when nikki (mihomo) process is running
+	CPUTemp  float64 // Celsius, 0 if unavailable
+	FanCur   int     // pwm-fan cur_state, -1 if absent
+	FanMax   int     // pwm-fan max_state
 }
 
 var (
@@ -75,6 +80,9 @@ func DrawDashboard(p *Pixmap, d *DashboardData) {
 	// CPU (right half)
 	p.DrawText(170, barY, "CPU", 2, colDim)
 	cpuPct := sprintfPct(d.CPUFrac)
+	if d.CPUTemp > 0 {
+		cpuPct += fmt.Sprintf("/%.0fC", d.CPUTemp)
+	}
 	p.DrawText(170+130-TextWidth(cpuPct, 2), barY, cpuPct, 2, colFg)
 	p.DrawBar(170, barY+14+labelBarGap, 130, barH, d.CPUFrac, colUp, colBarBg, colDim, false)
 
@@ -118,10 +126,29 @@ func DrawDashboard(p *Pixmap, d *DashboardData) {
 		p.DrawIconImage(ix, cy, "clash", iconD, true)
 	}
 
-	// Router IP (bottom-right, replaces time).
-	// Vertically centered with icons.
+	// Bottom-right info: [network icon] IP [fan icon] Fcur/max, right-aligned at x=300.
+	// Vertically centered with icons. Icons are paired with their data.
+	const infoIconD = 16
+	const infoGap = 4
+	x := 300 // right edge, work leftwards
+
+	// Fan state (rightmost).
+	if d.FanCur >= 0 && d.FanMax > 0 {
+		fanTxt := fmt.Sprintf("F%d/%d", d.FanCur, d.FanMax)
+		fanw := TextWidth(fanTxt, 2)
+		p.DrawText(x-fanw, cy-7, fanTxt, 2, colDim)
+		x -= fanw + infoGap
+		// Fan icon.
+		p.DrawIconImage(x-infoIconD/2, cy, "fan", infoIconD, true)
+		x -= infoIconD + infoGap + 6 // extra gap between groups
+	}
+
+	// Router IP.
 	ipw := TextWidth(d.RouterIP, 2)
-	p.DrawText(p.W-12-ipw, cy-7, d.RouterIP, 2, colDim)
+	p.DrawText(x-ipw, cy-7, d.RouterIP, 2, colDim)
+	x -= ipw + infoGap
+	// Network icon.
+	p.DrawIconImage(x-infoIconD/2, cy, "network", infoIconD, true)
 }
 
 func sprintfPct(frac float64) string {

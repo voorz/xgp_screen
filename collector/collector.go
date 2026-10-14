@@ -347,3 +347,41 @@ func IsNikkiRunning() bool {
 	}
 	return false
 }
+
+// ReadCPUTemp returns the CPU temperature in Celsius.
+// Reads /sys/class/thermal/thermal_zone0 (cpu-thermal), temp in millidegrees.
+func ReadCPUTemp() float64 {
+	data, err := os.ReadFile("/sys/class/thermal/thermal_zone0/temp")
+	if err != nil {
+		return 0
+	}
+	milli, err := strconv.Atoi(strings.TrimSpace(string(data)))
+	if err != nil {
+		return 0
+	}
+	return float64(milli) / 1000.0
+}
+
+// FanState holds the pwm-fan cooling device state.
+type FanState struct {
+	Cur int // current state (0 = off/min)
+	Max int // max state
+}
+
+// ReadFanState reads /sys/class/thermal/cooling_device0 (pwm-fan).
+// Returns Cur=-1 if the device is absent.
+func ReadFanState() FanState {
+	fs := FanState{Cur: -1, Max: 0}
+	cur, err := os.ReadFile("/sys/class/thermal/cooling_device0/cur_state")
+	if err != nil {
+		return fs
+	}
+	max, err := os.ReadFile("/sys/class/thermal/cooling_device0/max_state")
+	if err != nil {
+		return fs
+	}
+	c, _ := strconv.Atoi(strings.TrimSpace(string(cur)))
+	m, _ := strconv.Atoi(strings.TrimSpace(string(max)))
+	fs.Cur, fs.Max = c, m
+	return fs
+}

@@ -36,6 +36,9 @@ func main() {
 		DownHist: downHist,
 		BaiduOk:  true,
 		GoogleOk: false,
+		CPUTemp:  30,
+		FanCur:   2,
+		FanMax:   4,
 	}
 	screen.DrawDashboard(p, d)
 
