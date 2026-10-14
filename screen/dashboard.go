@@ -14,6 +14,7 @@ type DashboardData struct {
 	DownHist []float64
 	BaiduOk  bool
 	GoogleOk bool
+	NikkiOk  bool // true when nikki (mihomo) process is running
 }
 
 var (
@@ -69,13 +70,13 @@ func DrawDashboard(p *Pixmap, d *DashboardData) {
 	}
 	memPct := sprintfPct(memFrac)
 	p.DrawText(12+130-TextWidth(memPct, 2), barY, memPct, 2, colFg)
-	p.DrawBar(12, barY+14+labelBarGap, 130, barH, memFrac, colAccent, colBarBg, colDim)
+	p.DrawBar(12, barY+14+labelBarGap, 130, barH, memFrac, colAccent, colBarBg, colDim, false)
 
 	// CPU (right half)
 	p.DrawText(170, barY, "CPU", 2, colDim)
 	cpuPct := sprintfPct(d.CPUFrac)
 	p.DrawText(170+130-TextWidth(cpuPct, 2), barY, cpuPct, 2, colFg)
-	p.DrawBar(170, barY+14+labelBarGap, 130, barH, d.CPUFrac, colUp, colBarBg, colDim)
+	p.DrawBar(170, barY+14+labelBarGap, 130, barH, d.CPUFrac, colUp, colBarBg, colDim, false)
 
 	// ---- UP/DOWN text (left) + merged chart (right) ----
 	// Block gap 12px after MEM/CPU block (ends at startY+28).
@@ -97,7 +98,7 @@ func DrawDashboard(p *Pixmap, d *DashboardData) {
 	// Merged chart (right). Right edge aligned with CPU bar (x=300).
 	sx := 110
 	sw := 300 - sx // 190, right edge at x=300
-	p.DrawBar(sx, midY, sw, chartH, 0, colBg, colBg, colDim)
+	p.DrawBar(sx, midY, sw, chartH, 0, colBg, colBg, colDim, true)
 	p.DrawDualSparkline(sx+2, midY+2, sw-4, chartH-4, d.UpHist, d.DownHist, colUp, colDown)
 
 	// ---- Connectivity icons (bottom-left) + time (bottom-right) ----
@@ -111,7 +112,11 @@ func DrawDashboard(p *Pixmap, d *DashboardData) {
 	ix += iconStep
 	// Google (color if ok, grayscale if not)
 	p.DrawIconImage(ix, cy, "google", iconD, d.GoogleOk)
-	// ix += iconStep // next icon goes here
+	ix += iconStep
+	// Nikki/Clash: only show when running (hide when stopped).
+	if d.NikkiOk {
+		p.DrawIconImage(ix, cy, "clash", iconD, true)
+	}
 
 	// Router IP (bottom-right, replaces time).
 	// Vertically centered with icons.

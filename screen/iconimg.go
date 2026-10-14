@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-//go:embed icons/baidu.png icons/google.png
+//go:embed icons/baidu.png icons/google.png icons/clash.png
 var iconFS embed.FS
 
 var (

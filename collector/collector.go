@@ -310,3 +310,40 @@ func ifaceIPv4(name string) string {
 	}
 	return ""
 }
+
+// IsNikkiRunning reports whether nikki (mihomo) is running by scanning
+// /proc for a process whose cmdline contains both "mihomo" and "nikki".
+// This matches the nikki daemon: /usr/bin/mihomo -d /etc/nikki/run.
+func IsNikkiRunning() bool {
+	entries, err := os.ReadDir("/proc")
+	if err != nil {
+		return false
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		// Only numeric PIDs.
+		pid := e.Name()
+		isNum := true
+		for _, c := range pid {
+			if c < '0' || c > '9' {
+				isNum = false
+				break
+			}
+		}
+		if !isNum {
+			continue
+		}
+		data, err := os.ReadFile("/proc/" + pid + "/cmdline")
+		if err != nil {
+			continue
+		}
+		// cmdline is NUL-separated.
+		cmd := strings.ReplaceAll(string(data), "\x00", " ")
+		if strings.Contains(cmd, "mihomo") && strings.Contains(cmd, "nikki") {
+			return true
+		}
+	}
+	return false
+}
